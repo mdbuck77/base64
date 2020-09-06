@@ -2,9 +2,7 @@ base64 encode/decode data and print to standard output
 ## Synopsis
 ```base64 [OPTION]... [FILE]```
 ## Description
-
 Base64 encode or decode FILE, or standard input, to standard output.
-
 ```
 -w, --wrap=COLS
     Wrap encoded lines after COLS character (default 76). Use 0 to disable line wrapping. 
