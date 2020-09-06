@@ -41,6 +41,7 @@ import java.util.function.Consumer;
 				description = "Encodes a file to Base64 or decodes a file from Base64.",
 				version = "1.0",
 				mixinStandardHelpOptions = true
+				
 )
 public final class Base64 implements Callable<Integer> {
 
