@@ -55,8 +55,9 @@ public final class Base64 implements Callable<Integer> {
 	@CommandLine.Option(
 					names = {"-d", "--decode"},
 					description = "Decode data. ",
-					arity = "0",
-					defaultValue = "false"
+					arity = "0..1",
+					defaultValue = "false",
+					fallbackValue = "true"
 	)
 	private boolean decode;
 
@@ -66,6 +67,7 @@ public final class Base64 implements Callable<Integer> {
 
 	@Override
 	public Integer call() throws Exception {
+//		System.out.println("this = " + this);
 		if (this.decode) {
 			final java.util.Base64.Decoder decoder = java.util.Base64.getDecoder();
 			try (final InputStream inputStream = decoder.wrap(System.in)) {
@@ -119,5 +121,13 @@ public final class Base64 implements Callable<Integer> {
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
+	}
+
+	@Override
+	public String toString() {
+		return "Base64{" +
+						"file=" + file +
+						", decode=" + decode +
+						'}';
 	}
 }
