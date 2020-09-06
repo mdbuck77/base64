@@ -1,6 +1,6 @@
 base64 encode/decode data and print to standard output
 ## Synopsis
-base64 [OPTION]... [FILE]
+```base64 [OPTION]... [FILE]```
 ## Description
 
 Base64 encode or decode FILE, or standard input, to standard output.
