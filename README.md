@@ -1,5 +1,4 @@
-#base64
-base64 - base64 encode/decode data and print to standard output
+base64 encode/decode data and print to standard output
 ## Synopsis
 base64 [OPTION]... [FILE]
 ## Description
