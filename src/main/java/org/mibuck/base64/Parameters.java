@@ -1,9 +1,16 @@
 package org.mibuck.base64;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Enumeration;
 import java.util.Objects;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 public final class Parameters {
   private static final String USAGE_TEXT =
@@ -67,8 +74,23 @@ public final class Parameters {
   }
 
   private static void displayVersion() {
-    // todo: get from jar / manifest file?
-    System.out.println("base64 v1.00.00");
+    try {
+      final Enumeration<URL> resources = Parameters.class.getClassLoader().getResources("META-INF/MANIFEST.MF");
+      while (resources.hasMoreElements()) {
+        final URL url = resources.nextElement();
+        try (final InputStream inputStream = url.openStream()) {
+          final Manifest manifest = new Manifest(inputStream);
+          final Attributes attributes = manifest.getMainAttributes();
+          final String value = attributes.getValue("Implementation-Title");
+          if ("base64".equals(value)) {
+            System.out.println("base64 - " + attributes.getValue("Implementation-Version"));
+            return;
+          }
+        }
+      }
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 
   private static void usage() {
