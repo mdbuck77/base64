@@ -1,8 +1,5 @@
 package org.mibuck.base64;
 
-//import org.apache.commons.io.IOUtils;
-import picocli.CommandLine;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -10,77 +7,48 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
-//Name
-//base64 - base64 encode/decode data and print to standard output
-//Synopsis
-//base64 [OPTION]... [FILE]
-//Description
-//
-//Base64 encode or decode FILE, or standard input, to standard output.
-//
-//-w, --wrap=COLS
-//    Wrap encoded lines after COLS character (default 76). Use 0 to disable line wrapping.
-//-d, --decode
-//    Decode data.
-//-i, --ignore-garbage
-//    When decoding, ignore non-alphabet characters.
-//--help
-//    display this help and exit
-//--version
-//    output version information and exit
-//
-//With no FILE, or when FILE is -, read standard input.
-//
-//The data are encoded as described for the base64 alphabet in RFC 3548. When decoding, the input may contain newlines in addition to the bytes of the formal base64 alphabet. Use --ignore-garbage to attempt to recover from any other non-alphabet bytes in the encoded stream.
-// todo: create and use version provider to get the version from the .jar file but be careful of running from IDE as no jar will exist
-@CommandLine.Command(
-				name = "base64",
-				description = "Encodes a file to Base64 or decodes a file from Base64.",
-				version = "1.0",
-				mixinStandardHelpOptions = true
-
-)
-public final class Base64 implements Callable<Integer> {
-
-	@CommandLine.Parameters(
-					index = "0",
-					description = "The file to encode or decode",
-					arity = "0..1"
-	)
-	private Path file;
-
-	@CommandLine.Option(
-					names = {"-d", "--decode"},
-					description = "Decode data. ",
-					arity = "0..1",
-					defaultValue = "false",
-					fallbackValue = "true"
-	)
-	private boolean decode;
+public final class Base64 implements Runnable {
 
 	public static void main(String... args) {
-		new CommandLine(new Base64()).execute(args);
+		try {
+			new Base64(Parameters.valueOf(args)).run();
+		} catch (Throwable t) {
+			System.err.println(t.getLocalizedMessage());
+		}
+	}
+
+	private final Parameters parameters;
+
+	public Base64(Parameters parameters) {
+		this.parameters = parameters;
 	}
 
 	@Override
-	public Integer call() throws Exception {
-//		System.out.println("this = " + this);
-		if (this.decode) {
-			final java.util.Base64.Decoder decoder = java.util.Base64.getDecoder();
-			try (final InputStream inputStream = decoder.wrap(System.in)) {
-				decoderConsumer(this.file).accept(inputStream);
-			}
-		} else {
-			final java.util.Base64.Encoder encoder = java.util.Base64.getEncoder();
-			try (final OutputStream outputStream = encoder.wrap(System.out)) {
-				encoderConsumer(this.file).accept(outputStream);
-			}
-		}
+	public void run() {
+		try {
+			switch (this.parameters.mode()) {
+				case ENCODE:
+					final java.util.Base64.Encoder encoder = java.util.Base64.getEncoder();
+					try (final OutputStream outputStream = encoder.wrap(System.out)) {
+						encoderConsumer(parameters.file()).accept(outputStream);
+					}
+					break;
 
-		return 0;
+				case DECODE:
+					final java.util.Base64.Decoder decoder = java.util.Base64.getDecoder();
+					try (final InputStream inputStream = decoder.wrap(System.in)) {
+						decoderConsumer(this.parameters.file()).accept(inputStream);
+					}
+					break;
+
+				default:
+					throw new UnsupportedOperationException(String.valueOf(this.parameters.mode()));
+			}
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
 	}
 
 	private static Consumer<InputStream> decoderConsumer(final Path destination) {
@@ -102,7 +70,7 @@ public final class Base64 implements Callable<Integer> {
 			return outputStream -> copy(System.in, outputStream);
 		}
 
-		return outputStream ->  {
+		return outputStream -> {
 			try {
 				Files.copy(source, outputStream);
 			} catch (IOException e) {
@@ -121,13 +89,5 @@ public final class Base64 implements Callable<Integer> {
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
-	}
-
-	@Override
-	public String toString() {
-		return "Base64{" +
-						"file=" + file +
-						", decode=" + decode +
-						'}';
 	}
 }
