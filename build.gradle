@@ -9,6 +9,12 @@ version '1.0-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_11;
 targetCompatibility = JavaVersion.VERSION_11;
 
+plugins.withType(JavaPlugin).configureEach {
+    java {
+        modularity.inferModulePath = true
+    }
+}
+
 repositories {
     mavenCentral()
 }
