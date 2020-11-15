@@ -12,7 +12,11 @@ import java.util.function.Consumer;
 public final class Base64 implements Runnable {
 
 	public static void main(String... args) {
-		new Base64(Parameters.valueOf(args)).run();
+		try {
+			new Base64(Parameters.valueOf(args)).run();
+		} catch (Throwable t) {
+			System.err.println(t.getLocalizedMessage());
+		}
 	}
 
 	private final Parameters parameters;

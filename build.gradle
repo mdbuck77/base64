@@ -24,6 +24,16 @@ test {
     useJUnitPlatform()
 }
 
+jar {
+    manifest {
+        attributes(
+                "Implementation-Title"   : "base64",
+                "Implementation-Version" : archiveVersion,
+                "Implementation-Vendor"  : "Michael Buck"
+        )
+    }
+}
+
 application {
     mainClassName = 'org.mibuck.base64.Base64'
 }
