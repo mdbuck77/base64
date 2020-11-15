@@ -39,7 +39,7 @@ public final class Base64 implements Runnable {
 				case DECODE:
 					final java.util.Base64.Decoder decoder = java.util.Base64.getDecoder();
 					try (final InputStream inputStream = decoder.wrap(System.in)) {
-						decoderConsumer(this.parameters.file()).accept(inputStream);
+						decoderConsumer(parameters.file()).accept(inputStream);
 					}
 					break;
 
@@ -53,7 +53,13 @@ public final class Base64 implements Runnable {
 
 	private static Consumer<InputStream> decoderConsumer(final Path destination) {
 		if (destination == null) {
-			return inputStream -> copy(inputStream, System.out);
+			return in -> {
+				try {
+					in.transferTo(System.out);
+				} catch (IOException e) {
+					throw new UncheckedIOException(e);
+				}
+			};
 		}
 
 		return inputStream -> {
@@ -67,7 +73,13 @@ public final class Base64 implements Runnable {
 
 	private static Consumer<OutputStream> encoderConsumer(final Path source) {
 		if (source == null) {
-			return outputStream -> copy(System.in, outputStream);
+			return out -> {
+				try {
+					System.in.transferTo(out);
+				} catch (IOException e) {
+					throw new UncheckedIOException(e);
+				}
+			};
 		}
 
 		return outputStream -> {
@@ -77,17 +89,5 @@ public final class Base64 implements Runnable {
 				throw new UncheckedIOException(e);
 			}
 		};
-	}
-
-	private static void copy(final InputStream inputStream, final OutputStream outputStream) {
-		final byte[] buffer = new byte[64 * 1024];
-		int len;
-		try {
-			while ((len = inputStream.read(buffer)) != -1) {
-				outputStream.write(buffer, 0, len);
-			}
-		} catch (IOException e) {
-			throw new UncheckedIOException(e);
-		}
 	}
 }
